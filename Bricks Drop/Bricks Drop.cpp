@@ -20,6 +20,8 @@ using namespace std;
 
 constexpr int maxUserNameLength = 100;
 constexpr int maxIntLength = 10;
+constexpr int maxNumberOfBricksInARow = 8;
+constexpr int numberOfRows = 10;
 
 struct User
 {
@@ -153,8 +155,63 @@ User selectUser(User* users, size_t numberOfUsers)
 	return selectedUser;
 }
 
+struct Brick
+{
+	int length;
+	char color;
+};
+
+void printBrick(Brick brick)
+{
+	for (int i = 0; i < brick.length; i++)
+		cout << brick.color;
+}
+
+struct Canvas
+{
+	Brick* bricks[numberOfRows][maxNumberOfBricksInARow];
+	int currentRow = numberOfRows - 1; //The row at the top is 0 and the lowest is numberOfRows - 1
+};
+
+void emptyTheCanvas(Canvas& canvas)
+{
+	for (int row = 0; row < numberOfRows; row++)
+		for (int col = 0; col < maxNumberOfBricksInARow; col++)
+			canvas.bricks[row][col] = nullptr;
+	canvas.currentRow = numberOfRows - 1;
+}
+
+void printCanvas(const Canvas canvas)
+{
+	for (int i = 0; i < maxNumberOfBricksInARow + 2; i++)
+		cout << "-";
+	cout << endl;
+	for (int row = 0; row < numberOfRows; row++)
+	{
+		cout << "|";
+		int currentCol = 0;
+		while (currentCol < maxNumberOfBricksInARow)
+		{
+			if (canvas.bricks[row][currentCol] != nullptr)
+			{
+				printBrick(*canvas.bricks[row][currentCol]);
+				currentCol += canvas.bricks[row][currentCol]->length;
+			}
+			else
+			{
+				cout << " ";
+				currentCol++;
+			}
+		}
+		cout << "|" << endl;
+	}
+	for (int i = 0; i < maxNumberOfBricksInARow + 2; i++)
+		cout << "-";
+}
+
 int main()
 {
+	//Selecting the user
 	ifstream usersFile("users.txt");
 	int numberOfUsers = getNumberOfUsers(usersFile);
 	User* users = new User[numberOfUsers];
@@ -163,6 +220,35 @@ int main()
 	User selectedUser = selectUser(users, numberOfUsers);
 	cout << "Selected user:" << endl;
 	printUser(selectedUser);
+
+	//Creating the canvas
+	Canvas canvas;
+	emptyTheCanvas(canvas);
+	printCanvas(canvas);
+
+	//Filling the canvas with temporary bricks
+	cout << endl;
+	Brick tempBrick1;
+	tempBrick1.color = 'a';
+	tempBrick1.length = 4;
+	canvas.bricks[canvas.currentRow][0] = &tempBrick1;
+
+	Brick tempBrick2;
+	tempBrick2.color = 'b';
+	tempBrick2.length = 3;
+	canvas.bricks[canvas.currentRow--][5] = &tempBrick2;
+
+	Brick tempBrick3;
+	tempBrick3.color = 'c';
+	tempBrick3.length = 2;
+	canvas.bricks[canvas.currentRow][0] = &tempBrick3;
+
+	Brick tempBrick4;
+	tempBrick4.color = 'c';
+	tempBrick4.length = 4;
+	canvas.bricks[canvas.currentRow--][4] = &tempBrick4;
+
+	printCanvas(canvas);
 
 	usersFile.clear();
 	usersFile.close();
