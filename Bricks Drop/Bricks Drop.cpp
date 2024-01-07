@@ -258,6 +258,25 @@ bool isRowEmpty(Canvas& canvas, int row)
 	return true;
 }
 
+bool isRowFull(Canvas& canvas, int row)
+{
+	int currentCol = 0;
+	while (currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW)
+	{
+		if (canvas.bricks[row][currentCol] == nullptr)
+			return false;
+		currentCol += canvas.bricks[row][currentCol]->length;
+	}
+	return true;
+}
+
+void deleteFullRows(Canvas& canvas)
+{
+	for (int row = canvas.currentRow; row < NUMBER_OF_ROWS; row++)
+		if (isRowFull(canvas, row))
+			deleteRow(canvas, row);
+}
+
 void dropRows(Canvas& canvas)
 {
 	int currentRow = canvas.currentRow;
@@ -339,24 +358,19 @@ int main()
 
 	Brick* tempBrick2 = new Brick;
 	tempBrick2->color = 'b';
-	tempBrick2->length = 3;
-	canvas.bricks[canvas.currentRow--][5] = tempBrick2;
+	tempBrick2->length = 4;
+	canvas.bricks[canvas.currentRow--][4] = tempBrick2;
 
 	Brick* tempBrick3 = new Brick;
 	tempBrick3->color = 'c';
-	tempBrick3->length = 2;
+	tempBrick3->length = 4;
 	canvas.bricks[canvas.currentRow][0] = tempBrick3;
 
 	Brick* tempBrick4 = new Brick;
-	tempBrick4->color = 'c';
+	tempBrick4->color = 'a';
 	tempBrick4->length = 4;
-	canvas.bricks[canvas.currentRow--][4] = tempBrick4;
+	canvas.bricks[canvas.currentRow][4] = tempBrick4;
 
-	printCanvas(canvas);
-
-	//Moving one of the temporary rows up
-	cout << endl;
-	moveRowsUp(canvas, NUMBER_OF_ROWS - 2);
 	printCanvas(canvas);
 
 	//Generating a random row
@@ -365,15 +379,15 @@ int main()
 	generateRandomRow(canvas);
 	printCanvas(canvas);
 
-	//Deleting one of the temporary rows
+	//Deleting the full rows
 	cout << endl;
-	deleteRow(canvas, NUMBER_OF_ROWS - 2);
+	deleteFullRows(canvas);
 	printCanvas(canvas);
-
-	//Drop the rows
 	cout << endl;
+	cout << "The highest row is row " << canvas.currentRow << endl;
 	dropRows(canvas);
-	printCanvas(canvas);
+	//Before dropping the rows the highest row doesnt change!
+	cout << "The highest row is row " << canvas.currentRow << endl;
 
 	usersFile.clear();
 	usersFile.close();
