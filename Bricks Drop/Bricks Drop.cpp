@@ -15,17 +15,21 @@
 
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
+#include <time.h>
 
 using namespace std;
 
-constexpr int maxUserNameLength = 100;
-constexpr int maxIntLength = 10;
-constexpr int maxNumberOfBricksInARow = 8;
-constexpr int numberOfRows = 10;
+constexpr int MAX_USER_NAME_LENGTH = 100;
+constexpr int MAX_INT_LENGTH = 10;
+constexpr int MAX_BRICK_LENGTH = 4;
+constexpr int DIFFERENT_BRICK_COLORS = 4;
+constexpr int MAX_NUMBER_OF_BRICKS_IN_A_ROW = 8;
+constexpr int NUMBER_OF_ROWS = 10;
 
 struct User
 {
-	char name[maxUserNameLength + 1];
+	char name[MAX_USER_NAME_LENGTH + 1];
 	int highScore;
 };
 
@@ -83,7 +87,7 @@ int stringToNum(const char* str)
 
 int getNumberOfUsers(ifstream& usersFile)
 {
-	char numberOfUsersString[maxIntLength + 1];
+	char numberOfUsersString[MAX_INT_LENGTH + 1];
 	usersFile >> numberOfUsersString;
 	return stringToNum(numberOfUsersString);
 }
@@ -95,10 +99,10 @@ void getUsers(ifstream& userFile, User* users, size_t numberOfUsers)
 
 	for (size_t i = 0; i < numberOfUsers; i++)
 	{
-		char currentUserName[maxUserNameLength + 1];
+		char currentUserName[MAX_USER_NAME_LENGTH + 1];
 		userFile >> currentUserName;
 		strCpy(currentUserName, users[i].name);
-		char currentUserHighScore[maxIntLength + 1];
+		char currentUserHighScore[MAX_INT_LENGTH + 1];
 		userFile >> currentUserHighScore;
 		users[i].highScore = stringToNum(currentUserHighScore);
 	}
@@ -142,7 +146,7 @@ int findIndexOfUser(User* users, size_t numberOfUsers, const char* userName)
 
 User selectUser(User* users, size_t numberOfUsers)
 {
-	char selectedUserName[maxUserNameLength + 1];
+	char selectedUserName[MAX_USER_NAME_LENGTH + 1];
 	User selectedUser;
 	cout << "Select user: ";
 	cin >> selectedUserName;
@@ -161,36 +165,45 @@ struct Brick
 	char color;
 };
 
+void printSymbolNTymes(char symbol, int n)
+{
+	for (int i = 0; i < n; i++)
+		cout << symbol;
+}
+
 void printBrick(Brick brick)
 {
-	for (int i = 0; i < brick.length; i++)
-		cout << brick.color;
+	printSymbolNTymes(brick.color, brick.length);
 }
 
 struct Canvas
 {
-	Brick* bricks[numberOfRows][maxNumberOfBricksInARow];
-	int currentRow = numberOfRows - 1; //The row at the top is 0 and the lowest is numberOfRows - 1
+	Brick* bricks[NUMBER_OF_ROWS][MAX_NUMBER_OF_BRICKS_IN_A_ROW];
+	int currentRow = NUMBER_OF_ROWS - 1; //The row at the top is 0 and the lowest is numberOfRows - 1
 };
+
+void emptyARow(Canvas& canvas, int row)
+{
+	for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
+		canvas.bricks[row][col] = nullptr;
+}
 
 void emptyTheCanvas(Canvas& canvas)
 {
-	for (int row = 0; row < numberOfRows; row++)
-		for (int col = 0; col < maxNumberOfBricksInARow; col++)
-			canvas.bricks[row][col] = nullptr;
-	canvas.currentRow = numberOfRows - 1;
+	for (int row = 0; row < NUMBER_OF_ROWS; row++)
+		emptyARow(canvas, row);
+	canvas.currentRow = NUMBER_OF_ROWS - 1;
 }
 
-void printCanvas(const Canvas canvas)
+void printCanvas(const Canvas& canvas)
 {
-	for (int i = 0; i < maxNumberOfBricksInARow + 2; i++)
-		cout << "-";
+	printSymbolNTymes('-', MAX_NUMBER_OF_BRICKS_IN_A_ROW + 2);
 	cout << endl;
-	for (int row = 0; row < numberOfRows; row++)
+	for (int row = 0; row < NUMBER_OF_ROWS; row++)
 	{
 		cout << "|";
 		int currentCol = 0;
-		while (currentCol < maxNumberOfBricksInARow)
+		while (currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW)
 		{
 			if (canvas.bricks[row][currentCol] != nullptr)
 			{
@@ -205,8 +218,61 @@ void printCanvas(const Canvas canvas)
 		}
 		cout << "|" << endl;
 	}
-	for (int i = 0; i < maxNumberOfBricksInARow + 2; i++)
-		cout << "-";
+	printSymbolNTymes('-', MAX_NUMBER_OF_BRICKS_IN_A_ROW + 2);
+}
+
+void moveRowsUp(Canvas& canvas, int startingRow)
+{
+	if (!(startingRow > 0 && startingRow < NUMBER_OF_ROWS))
+		return;
+
+	for (int row = 0; row < startingRow; row++)
+		for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
+			canvas.bricks[row][col] = canvas.bricks[row + 1][col];
+
+	emptyARow(canvas, startingRow);
+
+	canvas.currentRow--;
+}
+
+char colorOfLeftBrick(const Canvas& canvas, int row, int col)
+{
+	for (int i = col - 1; i >= 0 && i > col - MAX_BRICK_LENGTH; i--)
+		if (canvas.bricks[row][i] != nullptr)
+			return canvas.bricks[row][i]->color;
+	return ' ';
+}
+
+void generateRandomRow(Canvas& canvas)
+{
+	int bottomRow = NUMBER_OF_ROWS - 1;
+	moveRowsUp(canvas, bottomRow);
+	int currentCol = 0;
+	while (currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW)
+	{
+		int newBrickLength = rand() % MAX_BRICK_LENGTH;
+		cout << newBrickLength << " " << currentCol << endl;
+		if (newBrickLength == 0)
+			currentCol++;
+		else
+		{
+			if (currentCol + newBrickLength > MAX_NUMBER_OF_BRICKS_IN_A_ROW)
+			{
+				newBrickLength = MAX_NUMBER_OF_BRICKS_IN_A_ROW - currentCol;
+			}
+			Brick* newBrick = new Brick;
+			newBrick->length = newBrickLength;
+			char newBrickColor;
+			char lastBrickColor = colorOfLeftBrick(canvas, bottomRow, currentCol);
+			do
+			{
+				newBrickColor = (rand() % DIFFERENT_BRICK_COLORS) + 'a';
+			} while (newBrickColor == lastBrickColor);
+			newBrick->color = newBrickColor;
+			canvas.bricks[bottomRow][currentCol] = newBrick;
+			currentCol += newBrickLength;
+		}
+	}
 }
 
 int main()
@@ -248,6 +314,17 @@ int main()
 	tempBrick4.length = 4;
 	canvas.bricks[canvas.currentRow--][4] = &tempBrick4;
 
+	printCanvas(canvas);
+
+	//Moving one of the temporary rows up
+	cout << endl;
+	moveRowsUp(canvas, NUMBER_OF_ROWS - 2);
+	printCanvas(canvas);
+
+	//Generating a random row
+	cout << endl;
+	srand(time(0));
+	generateRandomRow(canvas);
 	printCanvas(canvas);
 
 	usersFile.clear();
