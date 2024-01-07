@@ -221,18 +221,56 @@ void printCanvas(const Canvas& canvas)
 	printSymbolNTymes('-', MAX_NUMBER_OF_BRICKS_IN_A_ROW + 2);
 }
 
+void moveRow(Canvas& canvas, int rowToMove, int newLocation)
+{
+	for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
+		canvas.bricks[newLocation][col] = canvas.bricks[rowToMove][col];
+}
+
 void moveRowsUp(Canvas& canvas, int startingRow)
 {
 	if (!(startingRow > 0 && startingRow < NUMBER_OF_ROWS))
 		return;
 
 	for (int row = 0; row < startingRow; row++)
-		for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
-			canvas.bricks[row][col] = canvas.bricks[row + 1][col];
+		moveRow(canvas, row + 1, row);
 
 	emptyARow(canvas, startingRow);
 
 	canvas.currentRow--;
+}
+
+void deleteRow(Canvas& canvas, int row)
+{
+	for(int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
+		if (canvas.bricks[row][col] != nullptr)
+		{
+			delete canvas.bricks[row][col];
+			canvas.bricks[row][col] = nullptr;
+		}
+}
+
+bool isRowEmpty(Canvas& canvas, int row)
+{
+	for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
+		if (canvas.bricks[row][col] != nullptr)
+			return false;
+	return true;
+}
+
+void dropRows(Canvas& canvas)
+{
+	int currentRow = canvas.currentRow;
+	while (currentRow <= NUMBER_OF_ROWS - 1)
+	{
+		if (isRowEmpty(canvas, currentRow))
+		{
+			for (int row = currentRow - 1; row >= canvas.currentRow; row--)
+				moveRow(canvas, row, row + 1);
+			emptyARow(canvas, canvas.currentRow++);
+		}
+		currentRow++;
+	}
 }
 
 char colorOfLeftBrick(const Canvas& canvas, int row, int col)
@@ -294,25 +332,25 @@ int main()
 
 	//Filling the canvas with temporary bricks
 	cout << endl;
-	Brick tempBrick1;
-	tempBrick1.color = 'a';
-	tempBrick1.length = 4;
-	canvas.bricks[canvas.currentRow][0] = &tempBrick1;
+	Brick* tempBrick1 = new Brick;
+	tempBrick1->color = 'a';
+	tempBrick1->length = 4;
+	canvas.bricks[canvas.currentRow][0] = tempBrick1;
 
-	Brick tempBrick2;
-	tempBrick2.color = 'b';
-	tempBrick2.length = 3;
-	canvas.bricks[canvas.currentRow--][5] = &tempBrick2;
+	Brick* tempBrick2 = new Brick;
+	tempBrick2->color = 'b';
+	tempBrick2->length = 3;
+	canvas.bricks[canvas.currentRow--][5] = tempBrick2;
 
-	Brick tempBrick3;
-	tempBrick3.color = 'c';
-	tempBrick3.length = 2;
-	canvas.bricks[canvas.currentRow][0] = &tempBrick3;
+	Brick* tempBrick3 = new Brick;
+	tempBrick3->color = 'c';
+	tempBrick3->length = 2;
+	canvas.bricks[canvas.currentRow][0] = tempBrick3;
 
-	Brick tempBrick4;
-	tempBrick4.color = 'c';
-	tempBrick4.length = 4;
-	canvas.bricks[canvas.currentRow--][4] = &tempBrick4;
+	Brick* tempBrick4 = new Brick;
+	tempBrick4->color = 'c';
+	tempBrick4->length = 4;
+	canvas.bricks[canvas.currentRow--][4] = tempBrick4;
 
 	printCanvas(canvas);
 
@@ -325,6 +363,16 @@ int main()
 	cout << endl;
 	srand(time(0));
 	generateRandomRow(canvas);
+	printCanvas(canvas);
+
+	//Deleting one of the temporary rows
+	cout << endl;
+	deleteRow(canvas, NUMBER_OF_ROWS - 2);
+	printCanvas(canvas);
+
+	//Drop the rows
+	cout << endl;
+	dropRows(canvas);
 	printCanvas(canvas);
 
 	usersFile.clear();
