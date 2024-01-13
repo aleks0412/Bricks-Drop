@@ -26,6 +26,8 @@ constexpr int MAX_BRICK_LENGTH = 4;
 constexpr int DIFFERENT_BRICK_COLORS = 4;
 constexpr int MAX_NUMBER_OF_BRICKS_IN_A_ROW = 8;
 constexpr int NUMBER_OF_ROWS = 10;
+constexpr int LEFT_DIRECTION = -1;
+constexpr int RIGHT_DIRECTION = 1;
 
 struct User
 {
@@ -242,7 +244,7 @@ void moveRowsUp(Canvas& canvas, int startingRow)
 
 void deleteRow(Canvas& canvas, int row)
 {
-	for(int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
+	for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
 		if (canvas.bricks[row][col] != nullptr)
 		{
 			delete canvas.bricks[row][col];
@@ -292,6 +294,70 @@ void dropRows(Canvas& canvas)
 	}
 }
 
+int emptySpaceInDirection(Canvas& canvas, int row, int col, int direction)
+{
+	int emptySpace = 0;
+	switch (direction)
+	{
+	case RIGHT_DIRECTION:
+		if (canvas.bricks[row][col])
+			emptySpace -= canvas.bricks[row][col]->length;
+		break;
+	case LEFT_DIRECTION:
+		emptySpace--;
+		break;
+	default:
+		break;
+	}
+	int currentCol = col;
+	do
+	{
+		emptySpace++;
+		currentCol += direction;
+	} while (currentCol >= 0 && currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW && !canvas.bricks[row][currentCol]);
+	if (direction == LEFT_DIRECTION && currentCol >= 0 && currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW && canvas.bricks[row][currentCol])
+		emptySpace -= canvas.bricks[row][currentCol]->length - 1;
+	return emptySpace;
+}
+
+int emptySpaceUnderABrick(Canvas& canvas, int brickRow, int brickCol)
+{
+	if (!canvas.bricks[brickRow][brickCol])
+		return 0;
+	return emptySpaceInDirection(canvas, brickRow + 1, brickCol, LEFT_DIRECTION) + emptySpaceInDirection(canvas, brickRow + 1, brickCol, RIGHT_DIRECTION);
+}
+
+bool canBrickDrop(Canvas& canvas, int brickRow, int brickCol)
+{
+	if (!canvas.bricks[brickRow][brickCol])
+		return false;
+	if (brickRow == NUMBER_OF_ROWS - 1)
+		return false;
+	if (emptySpaceUnderABrick(canvas, brickRow, brickCol) >= canvas.bricks[brickRow][brickCol]->length)
+		return true;
+	return false;
+}
+
+void dropBricks(Canvas& canvas)
+{
+	for (int row = canvas.currentRow; row < NUMBER_OF_ROWS; row++)
+	{
+		for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
+		{
+			if (canvas.bricks[row][col] != nullptr && canBrickDrop(canvas, row, col))
+			{
+				canvas.bricks[row + 1][col] = canvas.bricks[row][col];
+				canvas.bricks[row][col] = nullptr;
+			}
+			if (isRowEmpty(canvas, row))
+			{
+				canvas.currentRow++;
+				break;
+			}
+		}
+	}
+}
+
 char colorOfLeftBrick(const Canvas& canvas, int row, int col)
 {
 	for (int i = col - 1; i >= 0 && i > col - MAX_BRICK_LENGTH; i--)
@@ -308,7 +374,6 @@ void generateRandomRow(Canvas& canvas)
 	while (currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW)
 	{
 		int newBrickLength = rand() % MAX_BRICK_LENGTH;
-		cout << newBrickLength << " " << currentCol << endl;
 		if (newBrickLength == 0)
 			currentCol++;
 		else
@@ -358,36 +423,37 @@ int main()
 
 	Brick* tempBrick2 = new Brick;
 	tempBrick2->color = 'b';
-	tempBrick2->length = 4;
-	canvas.bricks[canvas.currentRow--][4] = tempBrick2;
+	tempBrick2->length = 1;
+	canvas.bricks[canvas.currentRow--][7] = tempBrick2;
 
 	Brick* tempBrick3 = new Brick;
 	tempBrick3->color = 'c';
-	tempBrick3->length = 4;
-	canvas.bricks[canvas.currentRow][0] = tempBrick3;
+	tempBrick3->length = 2;
+	canvas.bricks[canvas.currentRow][4] = tempBrick3;
 
-	Brick* tempBrick4 = new Brick;
-	tempBrick4->color = 'a';
-	tempBrick4->length = 4;
-	canvas.bricks[canvas.currentRow][4] = tempBrick4;
-
+	cout << endl;
 	printCanvas(canvas);
 
-	//Generating a random row
-	cout << endl;
-	srand(time(0));
-	generateRandomRow(canvas);
-	printCanvas(canvas);
+	cout << endl << "The highest row is row: " << canvas.currentRow << endl;
+	cout << endl << "Empty space on the left of temp brick 1: " << emptySpaceInDirection(canvas, canvas.currentRow + 1, 0, LEFT_DIRECTION);
+	cout << endl << "Empty space on the right of temp brick 1: " << emptySpaceInDirection(canvas, canvas.currentRow + 1, 0, RIGHT_DIRECTION);
+	cout << endl << "Empty space on the left of temp brick 2: " << emptySpaceInDirection(canvas, canvas.currentRow + 1, 7, LEFT_DIRECTION);
+	cout << endl << "Empty space on the right of temp brick 2: " << emptySpaceInDirection(canvas, canvas.currentRow + 1, 7, RIGHT_DIRECTION);
+	cout << endl << "Empty space on the left of temp brick 3: " << emptySpaceInDirection(canvas, canvas.currentRow, 4, LEFT_DIRECTION);
+	cout << endl << "Empty space on the right of temp brick 3: " << emptySpaceInDirection(canvas, canvas.currentRow, 4, RIGHT_DIRECTION);
+	cout << endl << "Empty space under temp brick 3: " << emptySpaceUnderABrick(canvas, canvas.currentRow, 4);
 
-	//Deleting the full rows
+	//Move all bricks up
 	cout << endl;
-	deleteFullRows(canvas);
+	moveRowsUp(canvas, canvas.currentRow + 1);
 	printCanvas(canvas);
+	cout << endl << "The highest row is row: " << canvas.currentRow << endl;
+
+	//Dropping bricks
 	cout << endl;
-	cout << "The highest row is row " << canvas.currentRow << endl;
-	dropRows(canvas);
-	//Before dropping the rows the highest row doesnt change!
-	cout << "The highest row is row " << canvas.currentRow << endl;
+	dropBricks(canvas);
+	printCanvas(canvas);
+	cout << endl << "The highest row is row: " << canvas.currentRow << endl;
 
 	usersFile.clear();
 	usersFile.close();
