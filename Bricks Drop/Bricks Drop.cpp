@@ -358,6 +358,45 @@ void dropBricks(Canvas& canvas)
 	}
 }
 
+//direction = -1 is left and direction = 1 is right
+int emptySpaceInDirection(Canvas& canvas, int row, int col, int direction)
+{
+	int emptySpace = 0;
+	int currentCol = col;
+	while (currentCol >= 0 && currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW)
+	{
+		cout << endl << row << " " << currentCol << " " << (canvas.bricks[row][currentCol] != nullptr) << endl;
+		emptySpace++;
+		currentCol += direction;
+		if (canvas.bricks[row][currentCol] != nullptr)
+		{
+			emptySpace -= canvas.bricks[row][currentCol]->length;
+			break;
+		}
+	}
+
+	return emptySpace;
+}
+
+bool canBrickDrop(Canvas& canvas, int brickRow, int brickCol)
+{
+	return true;
+}
+
+void dropBricks(Canvas& canvas)
+{
+	for (int row = canvas.currentRow; row < NUMBER_OF_ROWS; row++)
+	{
+		for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
+		{
+			if (canvas.bricks[row][col] != nullptr)
+			{
+
+			}
+		}
+	}
+}
+
 char colorOfLeftBrick(const Canvas& canvas, int row, int col)
 {
 	for (int i = col - 1; i >= 0 && i > col - MAX_BRICK_LENGTH; i--)
@@ -431,7 +470,7 @@ int main()
 	tempBrick3->length = 2;
 	canvas.bricks[canvas.currentRow][4] = tempBrick3;
 
-	printCanvas(canvas);
+	Brick* tempBrick4 = new Brick;
 	cout << endl << "The highest row is row: " << canvas.currentRow << endl;
 	cout << endl << "Empty space on the left of temp brick 1: " << emptySpaceInDirection(canvas, canvas.currentRow + 1, 0, LEFT_DIRECTION);
 	cout << endl << "Empty space on the right of temp brick 1: " << emptySpaceInDirection(canvas, canvas.currentRow + 1, 0, RIGHT_DIRECTION);
@@ -440,6 +479,11 @@ int main()
 	cout << endl << "Empty space on the left of temp brick 3: " << emptySpaceInDirection(canvas, canvas.currentRow, 4, LEFT_DIRECTION);
 	cout << endl << "Empty space on the right of temp brick 3: " << emptySpaceInDirection(canvas, canvas.currentRow, 4, RIGHT_DIRECTION);
 	cout << endl << "Empty space under temp brick 3: " << emptySpaceUnderABrick(canvas, canvas.currentRow, 4);
+	tempBrick4->color = 'a';
+	tempBrick4->length = 4;
+	canvas.bricks[canvas.currentRow][4] = tempBrick4;
+
+	printCanvas(canvas);
 
 	//Move all bricks up
 	cout << endl;
