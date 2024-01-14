@@ -338,6 +338,16 @@ bool canBrickDrop(Canvas& canvas, int brickRow, int brickCol)
 	return false;
 }
 
+
+void moveBrick(Canvas& canvas, int brickRow, int brickCol, int newBrickRow, int newBrickCol)
+{
+	if (canvas.bricks[brickRow][brickCol] && !canvas.bricks[newBrickRow][newBrickCol])
+	{
+		canvas.bricks[newBrickRow][newBrickCol] = canvas.bricks[brickRow][brickCol];
+		canvas.bricks[brickRow][brickCol] = nullptr;
+	}
+}
+
 void dropBricks(Canvas& canvas)
 {
 	for (int row = canvas.currentRow; row < NUMBER_OF_ROWS; row++)
@@ -345,10 +355,7 @@ void dropBricks(Canvas& canvas)
 		for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
 		{
 			if (canvas.bricks[row][col] != nullptr && canBrickDrop(canvas, row, col))
-			{
-				canvas.bricks[row + 1][col] = canvas.bricks[row][col];
-				canvas.bricks[row][col] = nullptr;
-			}
+				moveBrick(canvas, row, col, row + 1, col);
 			if (isRowEmpty(canvas, row))
 			{
 				canvas.currentRow++;
@@ -429,31 +436,20 @@ int main()
 	Brick* tempBrick3 = new Brick;
 	tempBrick3->color = 'c';
 	tempBrick3->length = 2;
-	canvas.bricks[canvas.currentRow][4] = tempBrick3;
+	canvas.bricks[canvas.currentRow][1] = tempBrick3;
 
 	cout << endl;
 	printCanvas(canvas);
 
-	cout << endl << "The highest row is row: " << canvas.currentRow << endl;
-	cout << endl << "Empty space on the left of temp brick 1: " << emptySpaceInDirection(canvas, canvas.currentRow + 1, 0, LEFT_DIRECTION);
-	cout << endl << "Empty space on the right of temp brick 1: " << emptySpaceInDirection(canvas, canvas.currentRow + 1, 0, RIGHT_DIRECTION);
-	cout << endl << "Empty space on the left of temp brick 2: " << emptySpaceInDirection(canvas, canvas.currentRow + 1, 7, LEFT_DIRECTION);
-	cout << endl << "Empty space on the right of temp brick 2: " << emptySpaceInDirection(canvas, canvas.currentRow + 1, 7, RIGHT_DIRECTION);
-	cout << endl << "Empty space on the left of temp brick 3: " << emptySpaceInDirection(canvas, canvas.currentRow, 4, LEFT_DIRECTION);
-	cout << endl << "Empty space on the right of temp brick 3: " << emptySpaceInDirection(canvas, canvas.currentRow, 4, RIGHT_DIRECTION);
-	cout << endl << "Empty space under temp brick 3: " << emptySpaceUnderABrick(canvas, canvas.currentRow, 4);
-
-	//Move all bricks up
+	//Move brick
 	cout << endl;
-	moveRowsUp(canvas, canvas.currentRow + 1);
+	moveBrick(canvas, canvas.currentRow, 1, canvas.currentRow, 4);
 	printCanvas(canvas);
-	cout << endl << "The highest row is row: " << canvas.currentRow << endl;
 
-	//Dropping bricks
+	//Dropping brick
 	cout << endl;
 	dropBricks(canvas);
 	printCanvas(canvas);
-	cout << endl << "The highest row is row: " << canvas.currentRow << endl;
 
 	usersFile.clear();
 	usersFile.close();
