@@ -403,13 +403,47 @@ bool isStringInTemplate(const char* str, const char* templateStr)
 	return true;
 }
 
+bool isValidMoveCommand(Canvas& canvas, const char* moveCommand)
+{
+	if(!(isStringInTemplate(moveCommand, TEMPLATE_MOVE_STRING)))
+		return false;
+	int brickRow = moveCommand[INDEX_OF_BRICK_ROW_IN_COMMAND] - '0';
+	brickRow = NUMBER_OF_ROWS - brickRow - 1;
+	int brickCol = moveCommand[INDEX_OF_BRICK_COLUMN_IN_COMMAND] - '0';
+	if (!canvas.bricks[brickRow][brickCol])
+	{
+		cout << "There isn't a brick at the given coordinates!" << endl;
+		return false;
+	}
+	char moveDirection = moveCommand[INDEX_OF_DIRECTION_IN_COMMAND];
+	int movePositions = moveCommand[INDEX_OF_MOVE_POSITIONS_IN_COMMAND] - '0';
+	switch (moveDirection)
+	{
+	case LEFT_DIRECTION_CHAR:
+		if (movePositions > emptySpaceInDirection(canvas, brickRow, brickCol, LEFT_DIRECTION))
+		{
+			cout << "There isn't enough empty space in the given direction!" << endl;
+			return false;
+		}
+	case RIGHT_DIRECTION_CHAR:
+		if (movePositions > emptySpaceInDirection(canvas, brickRow, brickCol, RIGHT_DIRECTION))
+		{
+			cout << "There isn't enough empty space in the given direction!" << endl;
+			return false;
+		}
+	default:
+		break;
+	}
+	return true;
+}
+
 void getCommand(Canvas& canvas)
 {
 	char command[MAX_COMMAND_LENGTH + 1]{ 0 };
 	do
 	{
 		cin.getline(command, MAX_COMMAND_LENGTH + 1);
-	} while (!(isStringInTemplate(command, TEMPLATE_MOVE_STRING) || strCmp(command, QUIT_COMMAND) == 0));
+	} while (!(strCmp(command, QUIT_COMMAND) == 0 || isValidMoveCommand(canvas, command)));
 	if (strCmp(command, QUIT_COMMAND) == 0)
 	{
 		//handle quit command
@@ -429,6 +463,8 @@ void getCommand(Canvas& canvas)
 			break;
 		case RIGHT_DIRECTION_CHAR:
 			moveBrick(canvas, brickRow, brickCol, brickRow, brickCol + movePositions);
+			break;
+		default:
 			break;
 		}
 	}
