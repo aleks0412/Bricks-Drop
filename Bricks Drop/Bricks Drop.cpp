@@ -524,10 +524,9 @@ void generateRandomRow(Canvas& canvas)
 	}
 }
 
-int main()
+void setup(std::ifstream& usersFile, Canvas& canvas)
 {
 	//Selecting the user
-	std::ifstream usersFile("users.txt");
 	int numberOfUsers = getNumberOfUsers(usersFile);
 	User* users = new User[numberOfUsers];
 	getUsers(usersFile, users, numberOfUsers);
@@ -537,39 +536,16 @@ int main()
 	printUser(selectedUser);
 
 	//Creating the canvas
-	Canvas canvas;
 	emptyTheCanvas(canvas);
 	printCanvas(canvas);
+}
 
-	//Filling the canvas with temporary bricks
-	std::cout << std::endl;
-	Brick* tempBrick1 = new Brick;
-	tempBrick1->color = 'a';
-	tempBrick1->length = 4;
-	canvas.bricks[canvas.currentRow][0] = tempBrick1;
+int main()
+{
+	std::ifstream usersFile("users.txt");
+	Canvas canvas;
 
-	Brick* tempBrick2 = new Brick;
-	tempBrick2->color = 'b';
-	tempBrick2->length = 1;
-	canvas.bricks[canvas.currentRow--][7] = tempBrick2;
-
-	Brick* tempBrick3 = new Brick;
-	tempBrick3->color = 'c';
-	tempBrick3->length = 2;
-	canvas.bricks[canvas.currentRow][1] = tempBrick3;
-
-	std::cout << std::endl;
-	printCanvas(canvas);
-
-	//Get move command
-	std::cout << std::endl;
-	getCommand(canvas);
-	printCanvas(canvas);
-
-	//Dropping brick
-	std::cout << std::endl;
-	dropBricks(canvas);
-	printCanvas(canvas);
+	setup(usersFile, canvas);
 
 	usersFile.clear();
 	usersFile.close();
