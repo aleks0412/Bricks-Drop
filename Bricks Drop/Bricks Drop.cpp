@@ -26,8 +26,20 @@ constexpr int MAX_BRICK_LENGTH = 4;
 constexpr int DIFFERENT_BRICK_COLORS = 4;
 constexpr int MAX_NUMBER_OF_BRICKS_IN_A_ROW = 8;
 constexpr int NUMBER_OF_ROWS = 10;
-constexpr int LEFT_DIRECTION = -1;
-constexpr int RIGHT_DIRECTION = 1;
+constexpr int MAX_COMMAND_LENGTH = 7;
+
+const int LEFT_DIRECTION = -1;
+const int RIGHT_DIRECTION = 1;
+const char LEFT_DIRECTION_CHAR = 'l';
+const char RIGHT_DIRECTION_CHAR = 'r';
+const char TEMPLATE_DIGIT_CHAR = '%';
+const char TEMPLATE_DIRECTION_CHAR = '@';
+const char TEMPLATE_MOVE_STRING[] = "% % @ %";
+const char QUIT_COMMAND[] = "quit";
+const int INDEX_OF_BRICK_ROW_IN_COMMAND = 0;
+const int INDEX_OF_BRICK_COLUMN_IN_COMMAND = 2;
+const int INDEX_OF_DIRECTION_IN_COMMAND = 4;
+const int INDEX_OF_MOVE_POSITIONS_IN_COMMAND = 6;
 
 struct User
 {
@@ -85,6 +97,11 @@ int stringToNum(const char* str)
 		result += (str[i] - '0') * mult;
 	}
 	return result;
+}
+
+bool isCharInInterval(char ch, char intervalStart, char intervalEnd)
+{
+	return ch >= intervalStart && ch <= intervalEnd;
 }
 
 int getNumberOfUsers(ifstream& usersFile)
@@ -348,6 +365,101 @@ void moveBrick(Canvas& canvas, int brickRow, int brickCol, int newBrickRow, int 
 	}
 }
 
+/*bool isMoveCommandValid(char rowChar, char colChar, char directionChar, char movesChar)
+{
+	return isCharInInterval(rowChar, MIN_ROW_CHAR, MAX_ROW_CHAR) && isCharInInterval(colChar, MIN_COL_CHAR, MAX_COL_CHAR) && (directionChar == LEFT_DIRECTION_CHAR || directionChar == RIGHT_DIRECTION_CHAR) && isCharInInterval(movesChar, MIN_MOVES_CHAR, MAX_MOVES_CHAR);
+}
+
+bool moveBrickIfPossible(Canvas& canvas, char rowChar, char colChar, char directionChar, char movesChar)
+{
+	int brickRow = canvas.currentRow + ((rowChar - '0') - 1);
+	int brickCol = colChar - '0' - 1;
+	int moves = movesChar - '0';
+	switch (directionChar)
+	{
+	case LEFT_DIRECTION_CHAR:
+		if (moves <= emptySpaceInDirection(canvas, brickRow, brickCol, LEFT_DIRECTION))
+		{
+			moveBrick(canvas, brickRow, brickCol, brickRow, brickCol - moves);
+			return true;
+		}
+	case RIGHT_DIRECTION_CHAR:
+		if (moves <= emptySpaceInDirection(canvas, brickRow, brickCol, RIGHT_DIRECTION_CHAR))
+		{
+			moveBrick(canvas, brickRow, brickCol, brickRow, brickCol + moves);
+			return true;
+		}
+	default:
+		break;
+	}
+	return false;
+}
+
+void getMoveCommand(Canvas& canvas)
+{
+	char rowChar, colChar, directionChar, movesChar;
+	do
+	{
+		cin >> rowChar >> colChar >> directionChar >> movesChar;
+	} while (!isMoveCommandValid(rowChar, colChar, directionChar, movesChar) && !moveBrickIfPossible(canvas, rowChar, colChar, directionChar, movesChar));
+}*/
+
+bool isCharInTemplate(char ch, char templateCh)
+{
+	if (templateCh == TEMPLATE_DIGIT_CHAR)
+		return ch >= '0' && ch <= '9';
+	if (templateCh == TEMPLATE_DIRECTION_CHAR)
+		return ch == LEFT_DIRECTION_CHAR || ch == RIGHT_DIRECTION_CHAR;
+	return ch == templateCh;
+}
+
+bool isStringInTemplate(const char* str, const char* templateStr)
+{
+	if (str == nullptr || templateStr == nullptr)
+		return false;
+	if (strLen(str) != strLen(templateStr))
+		return false;
+	while (*str)
+	{
+		if (!isCharInTemplate(*str, *templateStr))
+			return false;
+		str++;
+		templateStr++;
+	}
+	return true;
+}
+
+void getCommand(Canvas& canvas)
+{
+	char command[MAX_COMMAND_LENGTH + 1]{ 0 };
+	do
+	{
+		cin.getline(command, MAX_COMMAND_LENGTH + 1);
+	} while (!(isStringInTemplate(command, TEMPLATE_MOVE_STRING) || strCmp(command, QUIT_COMMAND) == 0));
+	if(strCmp(command, QUIT_COMMAND) == 0)
+	{
+		//handle quit command
+		return;
+	}
+	if (isStringInTemplate(command, TEMPLATE_MOVE_STRING))
+	{
+		int brickRow = command[INDEX_OF_BRICK_ROW_IN_COMMAND] - '0';
+		brickRow = NUMBER_OF_ROWS - brickRow - 1;
+		int brickCol = command[INDEX_OF_BRICK_COLUMN_IN_COMMAND] - '0';
+		char moveDirection = command[INDEX_OF_DIRECTION_IN_COMMAND];
+		int movePositions = command[INDEX_OF_MOVE_POSITIONS_IN_COMMAND] - '0';
+		switch (moveDirection)
+		{
+		case LEFT_DIRECTION_CHAR:
+			moveBrick(canvas, brickRow, brickCol, brickRow, brickCol - movePositions);
+			break;
+		case RIGHT_DIRECTION_CHAR:
+			moveBrick(canvas, brickRow, brickCol, brickRow, brickCol + movePositions);
+			break;
+		}
+	}
+}
+
 void dropBricks(Canvas& canvas)
 {
 	for (int row = canvas.currentRow; row < NUMBER_OF_ROWS; row++)
@@ -441,9 +553,9 @@ int main()
 	cout << endl;
 	printCanvas(canvas);
 
-	//Move brick
+	//Get move command
 	cout << endl;
-	moveBrick(canvas, canvas.currentRow, 1, canvas.currentRow, 4);
+	getCommand(canvas);
 	printCanvas(canvas);
 
 	//Dropping brick
