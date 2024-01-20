@@ -337,11 +337,14 @@ int emptySpaceInDirection(Canvas& canvas, int row, int col, int direction)
 	return emptySpace;
 }
 
-int emptySpaceUnderABrick(Canvas& canvas, int brickRow, int brickCol)
+bool isBrickUnderTheTargetBrick(Canvas& canvas, int brickRow, int brickCol, int targetBrickRow, int targetBrickCol)
 {
-	if (!canvas.bricks[brickRow][brickCol])
-		return 0;
-	return emptySpaceInDirection(canvas, brickRow + 1, brickCol, LEFT_DIRECTION) + emptySpaceInDirection(canvas, brickRow + 1, brickCol, RIGHT_DIRECTION);
+	if (!canvas.bricks[brickRow][brickCol] || !canvas.bricks[targetBrickRow][targetBrickCol])
+		return false;
+	for (int col = brickCol; col < brickCol + canvas.bricks[brickRow][brickCol]->length; col++)
+		if (col == targetBrickCol && brickRow == targetBrickRow + 1)
+			return true;
+	return false;
 }
 
 bool canBrickDrop(Canvas& canvas, int brickRow, int brickCol)
@@ -350,9 +353,19 @@ bool canBrickDrop(Canvas& canvas, int brickRow, int brickCol)
 		return false;
 	if (brickRow == NUMBER_OF_ROWS - 1)
 		return false;
-	if (emptySpaceUnderABrick(canvas, brickRow, brickCol) >= canvas.bricks[brickRow][brickCol]->length)
-		return true;
-	return false;
+	/*for (int i = brickCol; i < brickCol + canvas.bricks[brickRow][brickCol]->length; i++)
+		if (canvas.bricks[brickRow + 1][brickCol])
+			return false;*/
+	for(int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
+	{
+		if (canvas.bricks[brickRow + 1][col])
+		{
+			if (isBrickUnderTheTargetBrick(canvas, brickRow + 1, col, brickRow, brickCol))
+				return false;
+			col += canvas.bricks[brickRow + 1][col]->length - 1;
+		}
+	}
+	return true;
 }
 
 
@@ -376,7 +389,7 @@ bool isCharInTemplate(char ch, char templateCh)
 
 bool isStringInTemplate(const char* str, const char* templateStr)
 {
-	if (str == nullptr || templateStr == nullptr)
+	if (!str || !templateStr)
 		return false;
 	if (strLen(str) != strLen(templateStr))
 		return false;
