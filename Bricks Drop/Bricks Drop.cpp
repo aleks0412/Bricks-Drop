@@ -18,8 +18,6 @@
 #include <cstdlib>
 #include <time.h>
 
-using namespace std;
-
 constexpr int MAX_USER_NAME_LENGTH = 100;
 constexpr int MAX_INT_LENGTH = 10;
 constexpr int MAX_BRICK_LENGTH = 4;
@@ -104,14 +102,14 @@ bool isCharInInterval(char ch, char intervalStart, char intervalEnd)
 	return ch >= intervalStart && ch <= intervalEnd;
 }
 
-int getNumberOfUsers(ifstream& usersFile)
+int getNumberOfUsers(std::ifstream& usersFile)
 {
 	char numberOfUsersString[MAX_INT_LENGTH + 1];
 	usersFile >> numberOfUsersString;
 	return stringToNum(numberOfUsersString);
 }
 
-void getUsers(ifstream& userFile, User* users, size_t numberOfUsers)
+void getUsers(std::ifstream& userFile, User* users, size_t numberOfUsers)
 {
 	if (users == nullptr)
 		return;
@@ -129,7 +127,7 @@ void getUsers(ifstream& userFile, User* users, size_t numberOfUsers)
 
 void printUser(User user)
 {
-	cout << "User: " << user.name << " High Score: " << user.highScore << endl;
+	std::cout << "User: " << user.name << " High Score: " << user.highScore << std::endl;
 }
 
 void printUsers(User* users, size_t numberOfUsers)
@@ -167,12 +165,12 @@ User selectUser(User* users, size_t numberOfUsers)
 {
 	char selectedUserName[MAX_USER_NAME_LENGTH + 1];
 	User selectedUser;
-	cout << "Select user: ";
-	cin >> selectedUserName;
+	std::cout << "Select user: ";
+	std::cin >> selectedUserName;
 	while (!isSelectedUserValid(users, numberOfUsers, selectedUserName))
 	{
-		cout << "The selected user is not valid. Choose a different user: ";
-		cin >> selectedUserName;
+		std::cout << "The selected user is not valid. Choose a different user: ";
+		std::cin >> selectedUserName;
 	}
 	selectedUser = users[findIndexOfUser(users, numberOfUsers, selectedUserName)];
 	return selectedUser;
@@ -187,7 +185,7 @@ struct Brick
 void printSymbolNTymes(char symbol, int n)
 {
 	for (int i = 0; i < n; i++)
-		cout << symbol;
+		std::cout << symbol;
 }
 
 void printBrick(Brick brick)
@@ -217,10 +215,10 @@ void emptyTheCanvas(Canvas& canvas)
 void printCanvas(const Canvas& canvas)
 {
 	printSymbolNTymes('-', MAX_NUMBER_OF_BRICKS_IN_A_ROW + 2);
-	cout << endl;
+	std::cout << std::endl;
 	for (int row = 0; row < NUMBER_OF_ROWS; row++)
 	{
-		cout << "|";
+		std::cout << "|";
 		int currentCol = 0;
 		while (currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW)
 		{
@@ -231,11 +229,11 @@ void printCanvas(const Canvas& canvas)
 			}
 			else
 			{
-				cout << " ";
+				std::cout << " ";
 				currentCol++;
 			}
 		}
-		cout << "|" << endl;
+		std::cout << "|" << std::endl;
 	}
 	printSymbolNTymes('-', MAX_NUMBER_OF_BRICKS_IN_A_ROW + 2);
 }
@@ -412,7 +410,7 @@ bool isValidMoveCommand(Canvas& canvas, const char* moveCommand)
 	int brickCol = moveCommand[INDEX_OF_BRICK_COLUMN_IN_COMMAND] - '0';
 	if (!canvas.bricks[brickRow][brickCol])
 	{
-		cout << "There isn't a brick at the given coordinates!" << endl;
+		std::cout << "There isn't a brick at the given coordinates!" << std::endl;
 		return false;
 	}
 	char moveDirection = moveCommand[INDEX_OF_DIRECTION_IN_COMMAND];
@@ -422,13 +420,13 @@ bool isValidMoveCommand(Canvas& canvas, const char* moveCommand)
 	case LEFT_DIRECTION_CHAR:
 		if (movePositions > emptySpaceInDirection(canvas, brickRow, brickCol, LEFT_DIRECTION))
 		{
-			cout << "There isn't enough empty space in the given direction!" << endl;
+			std::cout << "There isn't enough empty space in the given direction!" << std::endl;
 			return false;
 		}
 	case RIGHT_DIRECTION_CHAR:
 		if (movePositions > emptySpaceInDirection(canvas, brickRow, brickCol, RIGHT_DIRECTION))
 		{
-			cout << "There isn't enough empty space in the given direction!" << endl;
+			std::cout << "There isn't enough empty space in the given direction!" << std::endl;
 			return false;
 		}
 	default:
@@ -442,7 +440,7 @@ void getCommand(Canvas& canvas)
 	char command[MAX_COMMAND_LENGTH + 1]{ 0 };
 	do
 	{
-		cin.getline(command, MAX_COMMAND_LENGTH + 1);
+		std::cin.getline(command, MAX_COMMAND_LENGTH + 1);
 	} while (!(strCmp(command, QUIT_COMMAND) == 0 || isValidMoveCommand(canvas, command)));
 	if (strCmp(command, QUIT_COMMAND) == 0)
 	{
@@ -529,13 +527,13 @@ void generateRandomRow(Canvas& canvas)
 int main()
 {
 	//Selecting the user
-	ifstream usersFile("users.txt");
+	std::ifstream usersFile("users.txt");
 	int numberOfUsers = getNumberOfUsers(usersFile);
 	User* users = new User[numberOfUsers];
 	getUsers(usersFile, users, numberOfUsers);
 	printUsers(users, numberOfUsers);
 	User selectedUser = selectUser(users, numberOfUsers);
-	cout << "Selected user:" << endl;
+	std::cout << "Selected user:" << std::endl;
 	printUser(selectedUser);
 
 	//Creating the canvas
@@ -544,7 +542,7 @@ int main()
 	printCanvas(canvas);
 
 	//Filling the canvas with temporary bricks
-	cout << endl;
+	std::cout << std::endl;
 	Brick* tempBrick1 = new Brick;
 	tempBrick1->color = 'a';
 	tempBrick1->length = 4;
@@ -560,16 +558,16 @@ int main()
 	tempBrick3->length = 2;
 	canvas.bricks[canvas.currentRow][1] = tempBrick3;
 
-	cout << endl;
+	std::cout << std::endl;
 	printCanvas(canvas);
 
 	//Get move command
-	cout << endl;
+	std::cout << std::endl;
 	getCommand(canvas);
 	printCanvas(canvas);
 
 	//Dropping brick
-	cout << endl;
+	std::cout << std::endl;
 	dropBricks(canvas);
 	printCanvas(canvas);
 
