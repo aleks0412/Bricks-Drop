@@ -365,45 +365,6 @@ void moveBrick(Canvas& canvas, int brickRow, int brickCol, int newBrickRow, int 
 	}
 }
 
-/*bool isMoveCommandValid(char rowChar, char colChar, char directionChar, char movesChar)
-{
-	return isCharInInterval(rowChar, MIN_ROW_CHAR, MAX_ROW_CHAR) && isCharInInterval(colChar, MIN_COL_CHAR, MAX_COL_CHAR) && (directionChar == LEFT_DIRECTION_CHAR || directionChar == RIGHT_DIRECTION_CHAR) && isCharInInterval(movesChar, MIN_MOVES_CHAR, MAX_MOVES_CHAR);
-}
-
-bool moveBrickIfPossible(Canvas& canvas, char rowChar, char colChar, char directionChar, char movesChar)
-{
-	int brickRow = canvas.currentRow + ((rowChar - '0') - 1);
-	int brickCol = colChar - '0' - 1;
-	int moves = movesChar - '0';
-	switch (directionChar)
-	{
-	case LEFT_DIRECTION_CHAR:
-		if (moves <= emptySpaceInDirection(canvas, brickRow, brickCol, LEFT_DIRECTION))
-		{
-			moveBrick(canvas, brickRow, brickCol, brickRow, brickCol - moves);
-			return true;
-		}
-	case RIGHT_DIRECTION_CHAR:
-		if (moves <= emptySpaceInDirection(canvas, brickRow, brickCol, RIGHT_DIRECTION_CHAR))
-		{
-			moveBrick(canvas, brickRow, brickCol, brickRow, brickCol + moves);
-			return true;
-		}
-	default:
-		break;
-	}
-	return false;
-}
-
-void getMoveCommand(Canvas& canvas)
-{
-	char rowChar, colChar, directionChar, movesChar;
-	do
-	{
-		cin >> rowChar >> colChar >> directionChar >> movesChar;
-	} while (!isMoveCommandValid(rowChar, colChar, directionChar, movesChar) && !moveBrickIfPossible(canvas, rowChar, colChar, directionChar, movesChar));
-}*/
-
 bool isCharInTemplate(char ch, char templateCh)
 {
 	if (templateCh == TEMPLATE_DIGIT_CHAR)
@@ -436,7 +397,7 @@ void getCommand(Canvas& canvas)
 	{
 		cin.getline(command, MAX_COMMAND_LENGTH + 1);
 	} while (!(isStringInTemplate(command, TEMPLATE_MOVE_STRING) || strCmp(command, QUIT_COMMAND) == 0));
-	if(strCmp(command, QUIT_COMMAND) == 0)
+	if (strCmp(command, QUIT_COMMAND) == 0)
 	{
 		//handle quit command
 		return;
