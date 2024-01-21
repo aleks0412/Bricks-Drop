@@ -281,7 +281,6 @@ void printCanvas(const Canvas& canvas)
 void printGameScreen(const Canvas& canvas, int score)
 {
 	std::cout << "Score: " << score << std::endl;
-	std::cout << "Current row: " << canvas.currentRow << std::endl;
 	printCanvas(canvas);
 }
 
