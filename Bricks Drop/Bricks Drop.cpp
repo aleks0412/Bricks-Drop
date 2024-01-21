@@ -244,6 +244,7 @@ void printCanvas(const Canvas& canvas)
 	std::cout << std::endl << "  ";
 	for (int i = 0; i < MAX_NUMBER_OF_BRICKS_IN_A_ROW; i++)
 		std::cout << i;
+	std::cout << std::endl;
 }
 
 void printGameScreen(const Canvas& canvas, int score)
@@ -302,11 +303,17 @@ bool isRowFull(Canvas& canvas, int row)
 	return true;
 }
 
-void deleteFullRows(Canvas& canvas)
+//Returns the number of deleted rows
+int deleteFullRows(Canvas& canvas)
 {
+	int rowsDeleted = 0;
 	for (int row = canvas.currentRow; row < NUMBER_OF_ROWS; row++)
 		if (isRowFull(canvas, row))
+		{
 			deleteRow(canvas, row);
+			rowsDeleted++;
+		}
+	return rowsDeleted;
 }
 
 void dropAllRowsAboveGivenRow(Canvas& canvas, int row)
@@ -359,14 +366,13 @@ int emptySpaceInDirection(Canvas& canvas, int row, int col, int direction)
 	return emptySpace;
 }
 
-bool isBrickUnderTheTargetBrick(Canvas& canvas, int brickRow, int brickCol, int targetBrickRow, int targetBrickCol)
+void addBrickToBoolArray(Canvas& canvas, int brickRow, int brickCol, bool* arr, size_t size)
 {
-	if (!canvas.bricks[brickRow][brickCol] || !canvas.bricks[targetBrickRow][targetBrickCol])
-		return false;
-	for (int col = brickCol; col < brickCol + canvas.bricks[brickRow][brickCol]->length; col++)
-		if (col == targetBrickCol && brickRow == targetBrickRow + 1)
-			return true;
-	return false;
+	if (!canvas.bricks[brickRow][brickCol])
+		return;
+	for (int i = 0; i < canvas.bricks[brickRow][brickCol]->length; i++)
+		if (brickCol + i < size)
+			arr[brickCol + i] = true;
 }
 
 bool canBrickDrop(Canvas& canvas, int brickRow, int brickCol)
@@ -375,21 +381,15 @@ bool canBrickDrop(Canvas& canvas, int brickRow, int brickCol)
 		return false;
 	if (brickRow == NUMBER_OF_ROWS - 1)
 		return false;
-	/*for (int i = brickCol; i < brickCol + canvas.bricks[brickRow][brickCol]->length; i++)
-		if (canvas.bricks[brickRow + 1][brickCol])
-			return false;*/
-	for(int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
-	{
+	bool lowerRowBoolRepresentation[MAX_NUMBER_OF_BRICKS_IN_A_ROW]{ 0 };
+	for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
 		if (canvas.bricks[brickRow + 1][col])
-		{
-			if (isBrickUnderTheTargetBrick(canvas, brickRow + 1, col, brickRow, brickCol))
-				return false;
-			col += canvas.bricks[brickRow + 1][col]->length - 1;
-		}
-	}
+			addBrickToBoolArray(canvas, brickRow + 1, col, lowerRowBoolRepresentation, MAX_NUMBER_OF_BRICKS_IN_A_ROW);
+	for (int i = brickCol; i < brickCol + canvas.bricks[brickRow][brickCol]->length; i++)
+		if (lowerRowBoolRepresentation[i])
+			return false;
 	return true;
 }
-
 
 void moveBrick(Canvas& canvas, int brickRow, int brickCol, int newBrickRow, int newBrickCol)
 {
@@ -605,8 +605,9 @@ void gameLoop(Canvas& canvas, int& score)
 		std::cout << std::endl;
 		generateNotFullRandomRow(canvas, score);
 		std::cout << std::endl;
-		/*dropBricks(canvas);
-		deleteFullRows(canvas);
+		dropBricks(canvas);
+		printGameScreen(canvas, score);
+		/*deleteFullRows(canvas);
 		dropRows(canvas);*/
 		getCommand(canvas);
 		/*dropBricks(canvas);
