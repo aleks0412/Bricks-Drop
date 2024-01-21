@@ -254,14 +254,23 @@ void printGameScreen(const Canvas& canvas, int score)
 	printCanvas(canvas);
 }
 
+bool isRowValid(int row)
+{
+	return row >= 0 && row < NUMBER_OF_ROWS;
+}
+
 void moveRow(Canvas& canvas, int rowToMove, int newLocation)
 {
+	if (!isRowValid(rowToMove) || !isRowValid(newLocation))
+		return;
 	for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
 		canvas.bricks[newLocation][col] = canvas.bricks[rowToMove][col];
 }
 
 void moveRowsUp(Canvas& canvas, int startingRow)
 {
+	if (!isRowValid(startingRow))
+		return;
 	if (!(startingRow > 0 && startingRow < NUMBER_OF_ROWS))
 		return;
 
@@ -275,6 +284,8 @@ void moveRowsUp(Canvas& canvas, int startingRow)
 
 void deleteRow(Canvas& canvas, int row)
 {
+	if (!isRowValid(row))
+		return;
 	for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
 		if (canvas.bricks[row][col] != nullptr)
 		{
@@ -285,6 +296,8 @@ void deleteRow(Canvas& canvas, int row)
 
 bool isRowEmpty(Canvas& canvas, int row)
 {
+	if (!isRowValid(row))
+		return false;
 	for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
 		if (canvas.bricks[row][col] != nullptr)
 			return false;
@@ -293,6 +306,8 @@ bool isRowEmpty(Canvas& canvas, int row)
 
 bool isRowFull(Canvas& canvas, int row)
 {
+	if (!isRowValid(row))
+		return false;
 	int currentCol = 0;
 	while (currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW)
 	{
@@ -628,13 +643,16 @@ void gameLoop(Canvas& canvas, int& score)
 		std::cout << std::endl;
 		if(dropBricksWhilePossible(canvas))
 			printGameScreen(canvas, score);
-		/*deleteFullRows(canvas);
-		dropRows(canvas);*/
-		getCommand(canvas);
-		/*dropBricks(canvas);
-		deleteFullRows(canvas);
-		dropRows(canvas);*/
-		if (canvas.currentRow < 0)
+		int deletedRows = deleteFullRows(canvas);
+		if(deletedRows > 0)
+		{
+			score += deletedRows * SCORE_FOR_A_DELETED_ROW;
+			dropRows(canvas);
+			printGameScreen(canvas, score);
+		}
+		if(isRowValid(canvas.currentRow))
+			getCommand(canvas);
+		else
 			isGameOver = true;
 	}
 }
@@ -649,9 +667,7 @@ int main()
 	setup(usersFile, canvas, selectedUser);
 	gameLoop(canvas, score);
 
-	std::cout << std::endl;
-	getCommand(canvas);
-	printCanvas(canvas);
+	std::cout << "Final score: " << score << std::endl;
 
 	usersFile.clear();
 	usersFile.close();
