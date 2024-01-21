@@ -226,6 +226,13 @@ void emptyTheCanvas(Canvas& canvas)
 	canvas.currentRow = NUMBER_OF_ROWS - 1;
 }
 
+void deleteAllBricks(Canvas& canvas)
+{
+	for (int row = 0; row < NUMBER_OF_ROWS; row++)
+		for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
+			delete canvas.bricks[row][col];
+}
+
 void printCanvas(const Canvas& canvas)
 {
 	std::cout << " ";
@@ -720,6 +727,7 @@ int main()
 	}
 
 	delete[] users;
+	deleteAllBricks(canvas);
 
 	return 0;
 }
