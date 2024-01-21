@@ -577,30 +577,40 @@ char colorOfLeftBrick(const Canvas& canvas, int row, int col)
 	return ' ';
 }
 
+char colorOfTheNewBrick(Canvas& canvas, int newBrickRow, int newBrickCol)
+{
+	char newBrickColor;
+	char lastBrickColor = colorOfLeftBrick(canvas, newBrickRow, newBrickCol);
+	do
+	{
+		newBrickColor = (rand() % DIFFERENT_BRICK_COLORS) + 'a';
+	} while (newBrickColor == lastBrickColor);
+	return newBrickColor;
+}
+
 void generateRandomRow(Canvas& canvas)
 {
 	int bottomRow = NUMBER_OF_ROWS - 1;
 	moveRowsUp(canvas, bottomRow);
 	int currentCol = 0;
-	while (currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW)
+	int generatedBricks = 0;
+	while (currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW || generatedBricks == 0)
 	{
-		int newBrickLength = rand() % MAX_BRICK_LENGTH;
+		if (generatedBricks == 0 && currentCol >= MAX_NUMBER_OF_BRICKS_IN_A_ROW)
+			currentCol = 0;
+		int newBrickLength = rand() % (MAX_BRICK_LENGTH + 1);
 		if (newBrickLength == 0)
 			currentCol++;
 		else
 		{
+			generatedBricks++;
 			if (currentCol + newBrickLength > MAX_NUMBER_OF_BRICKS_IN_A_ROW)
 			{
 				newBrickLength = MAX_NUMBER_OF_BRICKS_IN_A_ROW - currentCol;
 			}
 			Brick* newBrick = new Brick;
 			newBrick->length = newBrickLength;
-			char newBrickColor;
-			char lastBrickColor = colorOfLeftBrick(canvas, bottomRow, currentCol);
-			do
-			{
-				newBrickColor = (rand() % DIFFERENT_BRICK_COLORS) + 'a';
-			} while (newBrickColor == lastBrickColor);
+			char newBrickColor = colorOfTheNewBrick(canvas, bottomRow, currentCol);
 			newBrick->color = newBrickColor;
 			canvas.bricks[bottomRow][currentCol] = newBrick;
 			currentCol += newBrickLength;

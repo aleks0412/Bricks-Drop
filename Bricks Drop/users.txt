@@ -1,4 +1,4 @@
 3
-User1 20
+User1 70
 User2 0
 User3 0
