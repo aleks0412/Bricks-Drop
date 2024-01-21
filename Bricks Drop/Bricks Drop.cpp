@@ -215,11 +215,13 @@ void emptyTheCanvas(Canvas& canvas)
 
 void printCanvas(const Canvas& canvas)
 {
+	std::cout << " ";
 	printSymbolNTymes('-', MAX_NUMBER_OF_BRICKS_IN_A_ROW + 2);
 	std::cout << std::endl;
 	for (int row = 0; row < NUMBER_OF_ROWS; row++)
 	{
-		std::cout << "|";
+		//Labels for the rows
+		std::cout << NUMBER_OF_ROWS - row - 1 << "|";
 		int currentCol = 0;
 		while (currentCol < MAX_NUMBER_OF_BRICKS_IN_A_ROW)
 		{
@@ -236,7 +238,12 @@ void printCanvas(const Canvas& canvas)
 		}
 		std::cout << "|" << std::endl;
 	}
+	std::cout << " ";
 	printSymbolNTymes('-', MAX_NUMBER_OF_BRICKS_IN_A_ROW + 2);
+	//Labels for columns
+	std::cout << std::endl << "  ";
+	for (int i = 0; i < MAX_NUMBER_OF_BRICKS_IN_A_ROW; i++)
+		std::cout << i;
 }
 
 void printGameScreen(const Canvas& canvas, int score)
@@ -432,21 +439,22 @@ bool isValidMoveCommand(Canvas& canvas, const char* moveCommand)
 	}
 	char moveDirection = moveCommand[INDEX_OF_DIRECTION_IN_COMMAND];
 	int movePositions = moveCommand[INDEX_OF_MOVE_POSITIONS_IN_COMMAND] - '0';
+	int emptySpace = 0;
 	switch (moveDirection)
 	{
 	case LEFT_DIRECTION_CHAR:
-		if (movePositions > emptySpaceInDirection(canvas, brickRow, brickCol, LEFT_DIRECTION))
+		emptySpace = emptySpaceInDirection(canvas, brickRow, brickCol, LEFT_DIRECTION);
+		if (movePositions > emptySpace)
 		{
-			std::cout << "There are " << emptySpaceInDirection(canvas, brickRow, brickCol, LEFT_DIRECTION) << " empty space int the given direction!" << std::endl;
-			std::cout << "There isn't enough empty space in the given direction!" << std::endl;
+			std::cout << "There are " << emptySpace << " empty space int the given direction!" << std::endl;
 			return false;
 		}
 		break;
 	case RIGHT_DIRECTION_CHAR:
-		if (movePositions > emptySpaceInDirection(canvas, brickRow, brickCol, RIGHT_DIRECTION))
+		emptySpace = emptySpaceInDirection(canvas, brickRow, brickCol, RIGHT_DIRECTION);
+		if (movePositions > emptySpace)
 		{
-			std::cout << "There are " << emptySpaceInDirection(canvas, brickRow, brickCol, RIGHT_DIRECTION) << " empty space int the given direction!" << std::endl;
-			std::cout << "There isn't enough empty space in the given direction!" << std::endl;
+			std::cout << "There are " << emptySpace << " empty space int the given direction!" << std::endl;
 			return false;
 		}
 		break;
@@ -478,11 +486,9 @@ void getCommand(Canvas& canvas)
 		switch (moveDirection)
 		{
 		case LEFT_DIRECTION_CHAR:
-			std::cout << "There are " << emptySpaceInDirection(canvas, brickRow, brickCol, LEFT_DIRECTION) << " empty space int the given direction!" << std::endl;
 			moveBrick(canvas, brickRow, brickCol, brickRow, brickCol - movePositions);
 			break;
 		case RIGHT_DIRECTION_CHAR:
-			std::cout << "There are " << emptySpaceInDirection(canvas, brickRow, brickCol, RIGHT_DIRECTION_CHAR) << " empty space int the given direction!" << std::endl;
 			moveBrick(canvas, brickRow, brickCol, brickRow, brickCol + movePositions);
 			break;
 		default:
