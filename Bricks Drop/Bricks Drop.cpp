@@ -497,21 +497,25 @@ void getCommand(Canvas& canvas)
 	}
 }
 
-void dropBricks(Canvas& canvas)
+//returns true if a brick has dropped
+bool dropBricks(Canvas& canvas)
 {
-	for (int row = canvas.currentRow; row < NUMBER_OF_ROWS; row++)
+	bool hasBrickDropped = false;
+	for (int row = NUMBER_OF_ROWS - 1; row > canvas.currentRow; row--)
 	{
 		for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
 		{
 			if (canvas.bricks[row][col] != nullptr && canBrickDrop(canvas, row, col))
-				moveBrick(canvas, row, col, row + 1, col);
-			if (isRowEmpty(canvas, row))
 			{
-				canvas.currentRow++;
-				break;
+				moveBrick(canvas, row, col, row + 1, col);
+				hasBrickDropped = true;
 			}
 		}
 	}
+	for(int row = canvas.currentRow + 1; row < NUMBER_OF_ROWS; row++)
+		if (isRowEmpty(canvas, row))
+			canvas.currentRow++;
+	return hasBrickDropped;
 }
 
 char colorOfLeftBrick(const Canvas& canvas, int row, int col)
@@ -605,8 +609,8 @@ void gameLoop(Canvas& canvas, int& score)
 		std::cout << std::endl;
 		generateNotFullRandomRow(canvas, score);
 		std::cout << std::endl;
-		dropBricks(canvas);
-		printGameScreen(canvas, score);
+		if(dropBricks(canvas))
+			printGameScreen(canvas, score);
 		/*deleteFullRows(canvas);
 		dropRows(canvas);*/
 		getCommand(canvas);
