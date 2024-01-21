@@ -258,18 +258,27 @@ bool isRowEmpty(Canvas& canvas, int row)
 	return true;
 }
 
+void dropAllRowsAboveGivenRow(Canvas& canvas, int row)
+{
+	for (int currentRow = row; currentRow > canvas.currentRow; currentRow--)
+	{
+		if (currentRow != 0)
+			moveRow(canvas, currentRow - 1, currentRow);
+		else
+			emptyARow(canvas, currentRow);
+	}
+	canvas.currentRow++;
+}
+
 void dropRows(Canvas& canvas)
 {
-	int currentRow = canvas.currentRow;
-	while (currentRow <= NUMBER_OF_ROWS - 1)
+	int currentRow = NUMBER_OF_ROWS - 1;
+	while (currentRow > canvas.currentRow)
 	{
 		if (isRowEmpty(canvas, currentRow))
-		{
-			for (int row = currentRow - 1; row >= canvas.currentRow; row--)
-				moveRow(canvas, row, row + 1);
-			emptyARow(canvas, canvas.currentRow++);
-		}
-		currentRow++;
+			dropAllRowsAboveGivenRow(canvas, currentRow);
+		else
+			currentRow--;
 	}
 }
 
@@ -356,24 +365,36 @@ int main()
 
 	//Moving one of the temporary rows up
 	cout << endl;
+	cout << "Current row: " << canvas.currentRow << endl;
+	moveRowsUp(canvas, NUMBER_OF_ROWS - 2);
+	moveRowsUp(canvas, NUMBER_OF_ROWS - 2);
+	moveRowsUp(canvas, NUMBER_OF_ROWS - 2);
+	moveRowsUp(canvas, NUMBER_OF_ROWS - 2);
+	moveRowsUp(canvas, NUMBER_OF_ROWS - 2);
+	moveRowsUp(canvas, NUMBER_OF_ROWS - 2);
 	moveRowsUp(canvas, NUMBER_OF_ROWS - 2);
 	printCanvas(canvas);
 
 	//Generating a random row
 	cout << endl;
+	cout << "Current row: " << canvas.currentRow << endl;
 	srand(time(0));
 	generateRandomRow(canvas);
 	printCanvas(canvas);
 
 	//Deleting one of the temporary rows
 	cout << endl;
+	cout << "Current row: " << canvas.currentRow << endl;
 	deleteRow(canvas, NUMBER_OF_ROWS - 2);
 	printCanvas(canvas);
 
 	//Drop the rows
 	cout << endl;
+	cout << "Current row: " << canvas.currentRow << endl;
 	dropRows(canvas);
 	printCanvas(canvas);
+	cout << endl;
+	cout << "Current row: " << canvas.currentRow << endl;
 
 	usersFile.clear();
 	usersFile.close();
