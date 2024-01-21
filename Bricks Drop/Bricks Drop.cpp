@@ -34,6 +34,7 @@ const char TEMPLATE_DIGIT_CHAR = '%';
 const char TEMPLATE_DIRECTION_CHAR = '@';
 const char TEMPLATE_MOVE_STRING[] = "% % @ %";
 const char QUIT_COMMAND[] = "quit";
+const char RESTART_COMMAND[] = "restart";
 const int INDEX_OF_BRICK_ROW_IN_COMMAND = 0;
 const int INDEX_OF_BRICK_COLUMN_IN_COMMAND = 2;
 const int INDEX_OF_DIRECTION_IN_COMMAND = 4;
@@ -506,10 +507,16 @@ void getCommand(Canvas& canvas, bool& isGameOver)
 	do
 	{
 		std::cin.getline(command, MAX_COMMAND_LENGTH + 1);
-	} while (!(strCmp(command, QUIT_COMMAND) == 0 || isValidMoveCommand(canvas, command)));
+	} while (!(strCmp(command, QUIT_COMMAND) == 0 || (strCmp(command, RESTART_COMMAND) == 0 && isGameOver) || isValidMoveCommand(canvas, command)));
 	if (strCmp(command, QUIT_COMMAND) == 0)
 	{
 		isGameOver = true;
+		return;
+	}
+	if (strCmp(command, RESTART_COMMAND) == 0)
+	{
+		std::cout << "RESET";
+		isGameOver = false;
 		return;
 	}
 	if (isStringInTemplate(command, TEMPLATE_MOVE_STRING))
@@ -653,9 +660,8 @@ void setup(Canvas& canvas, User*& users, size_t& numberOfUsers, User& selectedUs
 	usersFile.close();
 }
 
-void gameLoop(Canvas& canvas, int& score)
+void gameLoop(Canvas& canvas, int& score, bool& isGameOver)
 {
-	bool isGameOver = false;
 	while (!isGameOver)
 	{
 		std::cout << std::endl;
@@ -684,16 +690,23 @@ int main()
 	size_t numberOfUsers = 0;
 	User selectedUser;
 	int score = 0;
+	bool isGameOver = false;
 
-	setup(canvas, users, numberOfUsers, selectedUser);
-	gameLoop(canvas, score);
-
-	std::cout << "Final score: " << score << std::endl;
-	if (score > selectedUser.highScore)
+	while(!isGameOver)
 	{
-		std::cout << "NEW HIGH SCORE!!!" << std::endl;
-		users[findIndexOfUser(users, numberOfUsers, selectedUser.name)].highScore = score;
-		updateUsersFile(users, numberOfUsers);
+		setup(canvas, users, numberOfUsers, selectedUser);
+		gameLoop(canvas, score, isGameOver);
+
+		std::cout << "Final score: " << score << std::endl;
+		if (score > selectedUser.highScore)
+		{
+			std::cout << "NEW HIGH SCORE!!!" << std::endl;
+			users[findIndexOfUser(users, numberOfUsers, selectedUser.name)].highScore = score;
+			updateUsersFile(users, numberOfUsers);
+		}
+
+		std::cout << "Type restart to play again or quit to exit the game:" << std::endl;
+		getCommand(canvas, isGameOver);
 	}
 
 	delete[] users;
