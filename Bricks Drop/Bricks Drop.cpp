@@ -488,7 +488,7 @@ bool isValidMoveCommand(Canvas& canvas, const char* moveCommand)
 	return true;
 }
 
-void getCommand(Canvas& canvas)
+void getCommand(Canvas& canvas, bool& isGameOver)
 {
 	char command[MAX_COMMAND_LENGTH + 1]{ 0 };
 	do
@@ -497,7 +497,7 @@ void getCommand(Canvas& canvas)
 	} while (!(strCmp(command, QUIT_COMMAND) == 0 || isValidMoveCommand(canvas, command)));
 	if (strCmp(command, QUIT_COMMAND) == 0)
 	{
-		//handle quit command
+		isGameOver = true;
 		return;
 	}
 	if (isStringInTemplate(command, TEMPLATE_MOVE_STRING))
@@ -624,6 +624,7 @@ void setup(std::ifstream& usersFile, Canvas& canvas, User& selectedUser)
 	selectedUser = selectUser(users, numberOfUsers);
 	std::cout << "Selected user:" << std::endl;
 	printUser(selectedUser);
+	std::cout << "Type quit to exit." << std::endl;
 
 	//Creating the canvas
 	emptyTheCanvas(canvas);
@@ -651,7 +652,7 @@ void gameLoop(Canvas& canvas, int& score)
 			printGameScreen(canvas, score);
 		}
 		if(isRowValid(canvas.currentRow))
-			getCommand(canvas);
+			getCommand(canvas, isGameOver);
 		else
 			isGameOver = true;
 	}
