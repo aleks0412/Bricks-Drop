@@ -49,7 +49,7 @@ struct User
 
 int strLen(const char* str)
 {
-	if (str == nullptr)
+	if (!str)
 		return 0;
 
 	int result = 0;
@@ -60,7 +60,7 @@ int strLen(const char* str)
 
 int strCmp(const char* str1, const char* str2)
 {
-	if (str1 == nullptr || str2 == nullptr)
+	if (!str1 || !str2)
 		return 0;
 
 	while (*str1 && *str2 && *str1 == *str2)
@@ -73,7 +73,7 @@ int strCmp(const char* str1, const char* str2)
 
 void strCpy(const char* source, char* destination)
 {
-	if (source == nullptr || destination == nullptr)
+	if (!source || !destination)
 		return;
 
 	while (*source)
@@ -88,7 +88,7 @@ void strCpy(const char* source, char* destination)
 
 int stringToNum(const char* str)
 {
-	if (str == nullptr)
+	if (!str)
 		return -1;
 
 	int result = 0;
@@ -113,7 +113,7 @@ int getNumberOfUsers(std::ifstream& usersFile)
 
 void getUsers(std::ifstream& userFile, User* users, size_t numberOfUsers)
 {
-	if (users == nullptr)
+	if (!users)
 		return;
 
 	for (size_t i = 0; i < numberOfUsers; i++)
@@ -129,6 +129,9 @@ void getUsers(std::ifstream& userFile, User* users, size_t numberOfUsers)
 
 void updateUsersFile(User* users, size_t numberOfUsers)
 {
+	if (!users)
+		return;
+
 	std::ofstream usersFile("users.txt");
 	usersFile << numberOfUsers << std::endl;
 	for (size_t i = 0; i < numberOfUsers; i++)
@@ -146,7 +149,7 @@ void printUser(User user)
 
 void printUsers(User* users, size_t numberOfUsers)
 {
-	if (users == nullptr)
+	if (!users)
 		return;
 
 	for (int i = 0; i < numberOfUsers; i++)
@@ -155,7 +158,7 @@ void printUsers(User* users, size_t numberOfUsers)
 
 bool isSelectedUserValid(User* users, size_t numberOfUsers, const char* userName)
 {
-	if (users == nullptr)
+	if (!users)
 		return false;
 
 	for (size_t i = 0; i < numberOfUsers; i++)
@@ -166,7 +169,7 @@ bool isSelectedUserValid(User* users, size_t numberOfUsers, const char* userName
 
 int findIndexOfUser(User* users, size_t numberOfUsers, const char* userName)
 {
-	if (users == nullptr)
+	if (!users)
 		return -1;
 
 	for (size_t i = 0; i < numberOfUsers; i++)
@@ -213,8 +216,16 @@ struct Canvas
 	int currentRow = NUMBER_OF_ROWS - 1; //The row at the top is 0 and the lowest is numberOfRows - 1
 };
 
+bool isRowValid(int row)
+{
+	return row >= 0 && row < NUMBER_OF_ROWS;
+}
+
 void emptyARow(Canvas& canvas, int row)
 {
+	if (!isRowValid(row))
+		return;
+
 	for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
 		canvas.bricks[row][col] = nullptr;
 }
@@ -272,11 +283,6 @@ void printGameScreen(const Canvas& canvas, int score)
 	std::cout << "Score: " << score << std::endl;
 	std::cout << "Current row: " << canvas.currentRow << std::endl;
 	printCanvas(canvas);
-}
-
-bool isRowValid(int row)
-{
-	return row >= 0 && row < NUMBER_OF_ROWS;
 }
 
 void moveRow(Canvas& canvas, int rowToMove, int newLocation)
@@ -353,6 +359,9 @@ int deleteFullRows(Canvas& canvas)
 
 void dropAllRowsAboveGivenRow(Canvas& canvas, int row)
 {
+	if (!isRowValid(row))
+		return;
+
 	for (int currentRow = row; currentRow > canvas.currentRow; currentRow--)
 	{
 		if (currentRow != 0)
