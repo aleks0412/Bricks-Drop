@@ -302,18 +302,27 @@ void deleteFullRows(Canvas& canvas)
 			deleteRow(canvas, row);
 }
 
+void dropAllRowsAboveGivenRow(Canvas& canvas, int row)
+{
+	for (int currentRow = row; currentRow > canvas.currentRow; currentRow--)
+	{
+		if (currentRow != 0)
+			moveRow(canvas, currentRow - 1, currentRow);
+		else
+			emptyARow(canvas, currentRow);
+	}
+	canvas.currentRow++;
+}
+
 void dropRows(Canvas& canvas)
 {
-	int currentRow = canvas.currentRow;
-	while (currentRow <= NUMBER_OF_ROWS - 1)
+	int currentRow = NUMBER_OF_ROWS - 1;
+	while (currentRow > canvas.currentRow)
 	{
 		if (isRowEmpty(canvas, currentRow))
-		{
-			for (int row = currentRow - 1; row >= canvas.currentRow; row--)
-				moveRow(canvas, row, row + 1);
-			emptyARow(canvas, canvas.currentRow++);
-		}
-		currentRow++;
+			dropAllRowsAboveGivenRow(canvas, currentRow);
+		else
+			currentRow--;
 	}
 }
 
@@ -573,7 +582,7 @@ void setup(std::ifstream& usersFile, Canvas& canvas, User& selectedUser)
 	printCanvas(canvas);
 
 	//Setting the seed for the random number generator
-	srand(time(0));
+	srand(2);
 }
 
 void gameLoop(Canvas& canvas, int& score)
