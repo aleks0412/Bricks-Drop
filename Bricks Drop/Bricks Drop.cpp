@@ -437,15 +437,19 @@ bool isValidMoveCommand(Canvas& canvas, const char* moveCommand)
 	case LEFT_DIRECTION_CHAR:
 		if (movePositions > emptySpaceInDirection(canvas, brickRow, brickCol, LEFT_DIRECTION))
 		{
+			std::cout << "There are " << emptySpaceInDirection(canvas, brickRow, brickCol, LEFT_DIRECTION) << " empty space int the given direction!" << std::endl;
 			std::cout << "There isn't enough empty space in the given direction!" << std::endl;
 			return false;
 		}
+		break;
 	case RIGHT_DIRECTION_CHAR:
 		if (movePositions > emptySpaceInDirection(canvas, brickRow, brickCol, RIGHT_DIRECTION))
 		{
+			std::cout << "There are " << emptySpaceInDirection(canvas, brickRow, brickCol, RIGHT_DIRECTION) << " empty space int the given direction!" << std::endl;
 			std::cout << "There isn't enough empty space in the given direction!" << std::endl;
 			return false;
 		}
+		break;
 	default:
 		break;
 	}
@@ -474,9 +478,11 @@ void getCommand(Canvas& canvas)
 		switch (moveDirection)
 		{
 		case LEFT_DIRECTION_CHAR:
+			std::cout << "There are " << emptySpaceInDirection(canvas, brickRow, brickCol, LEFT_DIRECTION) << " empty space int the given direction!" << std::endl;
 			moveBrick(canvas, brickRow, brickCol, brickRow, brickCol - movePositions);
 			break;
 		case RIGHT_DIRECTION_CHAR:
+			std::cout << "There are " << emptySpaceInDirection(canvas, brickRow, brickCol, RIGHT_DIRECTION_CHAR) << " empty space int the given direction!" << std::endl;
 			moveBrick(canvas, brickRow, brickCol, brickRow, brickCol + movePositions);
 			break;
 		default:
@@ -582,7 +588,7 @@ void setup(std::ifstream& usersFile, Canvas& canvas, User& selectedUser)
 	printCanvas(canvas);
 
 	//Setting the seed for the random number generator
-	srand(2);
+	srand(time(0));
 }
 
 void gameLoop(Canvas& canvas, int& score)
@@ -592,7 +598,14 @@ void gameLoop(Canvas& canvas, int& score)
 	{
 		std::cout << std::endl;
 		generateNotFullRandomRow(canvas, score);
-		//printCanvas(canvas);
+		std::cout << std::endl;
+		/*dropBricks(canvas);
+		deleteFullRows(canvas);
+		dropRows(canvas);*/
+		getCommand(canvas);
+		/*dropBricks(canvas);
+		deleteFullRows(canvas);
+		dropRows(canvas);*/
 		if (canvas.currentRow < 0)
 			isGameOver = true;
 	}
