@@ -391,6 +391,15 @@ bool canBrickDrop(Canvas& canvas, int brickRow, int brickCol)
 	return true;
 }
 
+bool canABrickDrop(Canvas& canvas)
+{
+	for (int row = NUMBER_OF_ROWS - 1; row > canvas.currentRow; row--)
+		for (int col = 0; col < MAX_NUMBER_OF_BRICKS_IN_A_ROW; col++)
+			if (!canvas.bricks[row][col] && canBrickDrop(canvas, row, col))
+				return true;
+	return false;
+}
+
 void moveBrick(Canvas& canvas, int brickRow, int brickCol, int newBrickRow, int newBrickCol)
 {
 	if (canvas.bricks[brickRow][brickCol] && !canvas.bricks[newBrickRow][newBrickCol])
@@ -518,6 +527,14 @@ bool dropBricks(Canvas& canvas)
 	return hasBrickDropped;
 }
 
+//this function allows bricks to drop more than 1 rows
+bool dropBricksWhilePossible(Canvas& canvas)
+{
+	bool hasBrickDropped = dropBricks(canvas);
+	while (dropBricks(canvas));
+	return hasBrickDropped;
+}
+
 char colorOfLeftBrick(const Canvas& canvas, int row, int col)
 {
 	for (int i = col - 1; i >= 0 && i > col - MAX_BRICK_LENGTH; i--)
@@ -609,7 +626,7 @@ void gameLoop(Canvas& canvas, int& score)
 		std::cout << std::endl;
 		generateNotFullRandomRow(canvas, score);
 		std::cout << std::endl;
-		if(dropBricks(canvas))
+		if(dropBricksWhilePossible(canvas))
 			printGameScreen(canvas, score);
 		/*deleteFullRows(canvas);
 		dropRows(canvas);*/
