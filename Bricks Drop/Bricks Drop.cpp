@@ -126,6 +126,18 @@ void getUsers(std::ifstream& userFile, User* users, size_t numberOfUsers)
 	}
 }
 
+void updateUsersFile(User* users, size_t numberOfUsers)
+{
+	std::ofstream usersFile("users.txt");
+	usersFile << numberOfUsers << std::endl;
+	for (size_t i = 0; i < numberOfUsers; i++)
+		usersFile << users[i].name << " " << users[i].highScore << std::endl;
+
+	//Closing the users file
+	usersFile.clear();
+	usersFile.close();
+}
+
 void printUser(User user)
 {
 	std::cout << "User: " << user.name << " High Score: " << user.highScore << std::endl;
@@ -613,11 +625,14 @@ void generateNotFullRandomRow(Canvas& canvas, int& score)
 	}
 }
 
-void setup(std::ifstream& usersFile, Canvas& canvas, User& selectedUser)
+void setup(Canvas& canvas, User*& users, size_t& numberOfUsers, User& selectedUser)
 {
+	//Opening the users file
+	std::ifstream usersFile("users.txt");
+
 	//Selecting the user
-	int numberOfUsers = getNumberOfUsers(usersFile);
-	User* users = new User[numberOfUsers];
+	numberOfUsers = getNumberOfUsers(usersFile);
+	users = new User[numberOfUsers];
 	getUsers(usersFile, users, numberOfUsers);
 	std::cout << "All users: " << std::endl;
 	printUsers(users, numberOfUsers);
@@ -632,6 +647,10 @@ void setup(std::ifstream& usersFile, Canvas& canvas, User& selectedUser)
 
 	//Setting the seed for the random number generator
 	srand(time(0));
+
+	//Closing the users file
+	usersFile.clear();
+	usersFile.close();
 }
 
 void gameLoop(Canvas& canvas, int& score)
@@ -660,18 +679,24 @@ void gameLoop(Canvas& canvas, int& score)
 
 int main()
 {
-	std::ifstream usersFile("users.txt");
 	Canvas canvas;
+	User* users = nullptr;
+	size_t numberOfUsers = 0;
 	User selectedUser;
 	int score = 0;
 
-	setup(usersFile, canvas, selectedUser);
+	setup(canvas, users, numberOfUsers, selectedUser);
 	gameLoop(canvas, score);
 
 	std::cout << "Final score: " << score << std::endl;
+	if (score > selectedUser.highScore)
+	{
+		std::cout << "NEW HIGH SCORE!!!" << std::endl;
+		users[findIndexOfUser(users, numberOfUsers, selectedUser.name)].highScore = score;
+		updateUsersFile(users, numberOfUsers);
+	}
 
-	usersFile.clear();
-	usersFile.close();
+	delete[] users;
 
 	return 0;
 }
