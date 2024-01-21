@@ -38,6 +38,7 @@ const int INDEX_OF_BRICK_ROW_IN_COMMAND = 0;
 const int INDEX_OF_BRICK_COLUMN_IN_COMMAND = 2;
 const int INDEX_OF_DIRECTION_IN_COMMAND = 4;
 const int INDEX_OF_MOVE_POSITIONS_IN_COMMAND = 6;
+const int SCORE_FOR_A_DELETED_ROW = 10;
 
 struct User
 {
@@ -236,6 +237,13 @@ void printCanvas(const Canvas& canvas)
 		std::cout << "|" << std::endl;
 	}
 	printSymbolNTymes('-', MAX_NUMBER_OF_BRICKS_IN_A_ROW + 2);
+}
+
+void printGameScreen(const Canvas& canvas, int score)
+{
+	std::cout << "Score: " << score << std::endl;
+	std::cout << "Current row: " << canvas.currentRow << std::endl;
+	printCanvas(canvas);
 }
 
 void moveRow(Canvas& canvas, int rowToMove, int newLocation)
@@ -524,28 +532,76 @@ void generateRandomRow(Canvas& canvas)
 	}
 }
 
-void setup(std::ifstream& usersFile, Canvas& canvas)
+void generateNotFullRandomRow(Canvas& canvas, int& score)
+{
+	int bottomRow = NUMBER_OF_ROWS - 1;
+	bool successfulGeneration = false;
+	while(!successfulGeneration)
+	{
+		generateRandomRow(canvas);
+		std::cout << std::endl;
+		printGameScreen(canvas, score);
+		if (isRowFull(canvas, bottomRow))
+		{
+			score += SCORE_FOR_A_DELETED_ROW;
+			deleteRow(canvas, bottomRow);
+			std::cout << std::endl;
+			printGameScreen(canvas, score);
+			dropRows(canvas);
+			std::cout << std::endl;
+			printGameScreen(canvas, score);
+		}
+		else
+			successfulGeneration = true;
+	}
+}
+
+void setup(std::ifstream& usersFile, Canvas& canvas, User& selectedUser)
 {
 	//Selecting the user
 	int numberOfUsers = getNumberOfUsers(usersFile);
 	User* users = new User[numberOfUsers];
 	getUsers(usersFile, users, numberOfUsers);
+	std::cout << "All users: " << std::endl;
 	printUsers(users, numberOfUsers);
-	User selectedUser = selectUser(users, numberOfUsers);
+	selectedUser = selectUser(users, numberOfUsers);
 	std::cout << "Selected user:" << std::endl;
 	printUser(selectedUser);
 
 	//Creating the canvas
 	emptyTheCanvas(canvas);
 	printCanvas(canvas);
+
+	//Setting the seed for the random number generator
+	srand(time(0));
+}
+
+void gameLoop(Canvas& canvas, int& score)
+{
+	bool isGameOver = false;
+	while (!isGameOver)
+	{
+		std::cout << std::endl;
+		generateNotFullRandomRow(canvas, score);
+		//printCanvas(canvas);
+		if (canvas.currentRow < 0)
+			isGameOver = true;
+	}
 }
 
 int main()
 {
 	std::ifstream usersFile("users.txt");
 	Canvas canvas;
+	User selectedUser;
+	int score = 0;
 
-	setup(usersFile, canvas);
+	setup(usersFile, canvas, selectedUser);
+	gameLoop(canvas, score);
+
+	std::cout << std::endl;
+	getCommand(canvas);
+	printCanvas(canvas);
 
 	usersFile.clear();
 	usersFile.close();
